@@ -1,13 +1,13 @@
 'use client';
 import { useState, useEffect } from 'react';
-import DashboardView from './components/Dashboard/DashboardView';
-import SurfboardsView from './components/Surfboards/SurfboardsView';
-import KillasView from './components/Killas/KillasView';
-import CerasView from './components/Ceras/CerasView';
-import ClientesView from './components/Clientes/ClientesView';
-import RentasView from './components/Rentas/RentasView';
-import ClasesView from './components/Clases/ClasesView';
-import VentasView from './components/Ventas/VentasView';
+import DashboardView from './Components/Dashboard/DashboardView';
+import SurfboardsView from './Components/Surfboards/SurfboardsView';
+import KillasView from './Components/Killas/KillasView';
+import CerasView from './Components/Ceras/CerasView';
+import ClientesView from './Components/Clientes/ClientesView';
+import RentasView from './Components/Rentas/RentasView';
+import ClasesView from './Components/Clases/ClasesView';
+import VentasView from './Components/Ventas/VentasView';
 
 export default function Home() {
   const [tabActiva, setTabActiva] = useState<string>('Ventas');
@@ -70,7 +70,7 @@ export default function Home() {
             );
           })}
         </div>
-      </header>
+      </header>-
 
       {/* Contenido Dinámico por Módulo */}
       <main className="max-w-7xl mx-auto px-6 py-8">
