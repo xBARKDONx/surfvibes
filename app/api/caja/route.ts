@@ -1,40 +1,54 @@
 import pool from '@/lib/db';
 import { NextResponse } from 'next/server';
 
-// GET: Obtener la caja activa o la más reciente
+// GET: Consultar el estado de la caja actual
 export async function GET() {
   try {
-    // Busca la última caja con estado 'Abierta' o simplemente la más reciente
-    const [rows] = await pool.query("SELECT * FROM caja WHERE estado = 'Abierta' ORDER BY id DESC LIMIT 1");
+    const [rows] = await pool.query(
+      "SELECT * FROM caja WHERE estado = 'Abierta' ORDER BY id DESC LIMIT 1"
+    );
+    
+    // Devuelve el registro de la caja o null si está cerrada
     return NextResponse.json(rows[0] || null);
   } catch (error) {
     console.error('Error GET caja:', error);
-    return NextResponse.json({ error: 'Error al consultar la caja' }, { status: 500 });
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
-// POST: Abrir caja con cualquier monto ingresado por el usuario
+// POST: Abrir o Cerrar la caja
 export async function POST(req) {
   try {
-    const { monto_inicio } = await req.json();
+    const body = await req.json();
+    const { accion, monto_inicio } = body;
+    const hoy = new Date().toISOString().split('T')[0];
+
+    if (accion === 'ABRIR' || !accion) {
+      const monto = Number(monto_inicio) || 250.00;
+
+      const [result] = await pool.query(
+        `INSERT INTO caja (fecha, monto_inicio, total_efectivo, total_tarjeta, total_propinas, total_egresos, estado)
+         VALUES (?, ?, 0.00, 0.00, 0.00, 0.00, 'Abierta')`,
+        [hoy, monto]
+      );
+
+      return NextResponse.json({ 
+        success: true, 
+        data: { id: result.insertId, fecha: hoy, monto_inicio: monto, estado: 'Abierta' } 
+      });
+    } 
     
-    // Obtener la fecha actual en formato local YYYY-MM-DD
-    const hoy = new Date().toLocaleDateString('sv-SE'); // Produce 'YYYY-MM-DD'
+    if (accion === 'CERRAR') {
+      await pool.query(
+        "UPDATE caja SET estado = 'Cerrada' WHERE estado = 'Abierta'"
+      );
+      return NextResponse.json({ success: true, message: 'Caja cerrada' });
+    }
 
-    const [result] = await pool.query(
-      `INSERT INTO caja (fecha, monto_inicio, total_efectivo, total_tarjeta, total_propinas, total_egresos, estado)
-       VALUES (?, ?, 0.00, 0.00, 0.00, 0.00, 'Abierta')`,
-      [hoy, monto_inicio || 250.00]
-    );
+    return NextResponse.json({ success: false, error: 'Acción no válida' }, { status: 400 });
 
-    return NextResponse.json({ 
-      id: result.insertId, 
-      fecha: hoy, 
-      monto_inicio: monto_inicio || 250.00, 
-      estado: 'Abierta' 
-    });
   } catch (error) {
     console.error('Error POST caja:', error);
-    return NextResponse.json({ error: 'Error al abrir caja' }, { status: 500 });
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
