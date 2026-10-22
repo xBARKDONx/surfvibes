@@ -12,4 +12,4 @@ const pool = mysql.createPool({
   ssl: process.env.DB_HOST !== 'localhost' ? { rejectUnauthorized: false } : false
 });
 
-export default pool;
+export default pool;  
