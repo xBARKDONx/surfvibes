@@ -1,5 +1,5 @@
-// @ts-ignore
-import pool from '../../../lib/db';
+import pool from '@/lib/db';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET() {
   try {
@@ -7,14 +7,14 @@ export async function GET() {
       "SELECT * FROM caja WHERE estado = 'Abierta' ORDER BY id DESC LIMIT 1"
     );
 
-    return Response.json(rows && rows.length > 0 ? rows[0] : null);
+    return NextResponse.json(rows && rows.length > 0 ? rows[0] : null);
   } catch (error: any) {
     console.error('Error GET caja:', error);
-    return Response.json({ success: false, error: error?.message || 'Error' }, { status: 500 });
+    return NextResponse.json({ success: false, error: error?.message || 'Error en servidor' }, { status: 500 });
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
     const { accion, monto_inicio } = body;
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
         [hoy, monto]
       );
 
-      return Response.json({ 
+      return NextResponse.json({ 
         success: true, 
         data: { id: result.insertId, fecha: hoy, monto_inicio: monto, estado: 'Abierta' } 
       });
@@ -37,13 +37,13 @@ export async function POST(req: Request) {
 
     if (accion === 'CERRAR') {
       await pool.query("UPDATE caja SET estado = 'Cerrada' WHERE estado = 'Abierta'");
-      return Response.json({ success: true, message: 'Caja cerrada' });
+      return NextResponse.json({ success: true, message: 'Caja cerrada correctamente' });
     }
 
-    return Response.json({ success: false, error: 'Acción no válida' }, { status: 400 });
+    return NextResponse.json({ success: false, error: 'Acción no válida' }, { status: 400 });
 
   } catch (error: any) {
     console.error('Error POST caja:', error);
-    return Response.json({ success: false, error: error?.message || 'Error' }, { status: 500 });
+    return NextResponse.json({ success: false, error: error?.message || 'Error en servidor' }, { status: 500 });
   }
 }
