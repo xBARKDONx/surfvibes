@@ -88,14 +88,14 @@ export default function DashboardView() {
       {/* CABECERA */}
       <div className="flex justify-between items-center border-b border-gray-800 pb-4">
         <div>
-          <h1 className="text-2xl font-bold text-cyan-400">🌊 VibesWell Surf - Resumen General</h1>
+          <h1 className="text-2xl font-bold text-cyan-400">VibesSurfAcademy - Resumen General</h1>
           <p className="text-sm text-gray-400">Métricas principales y rendimiento del día</p>
         </div>
         <button
           onClick={cargarDashboard}
           className="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-xs px-3 py-2 rounded-lg transition text-gray-300"
         >
-          🔄 Actualizar
+          Actualizar
         </button>
       </div>
 
@@ -137,7 +137,7 @@ export default function DashboardView() {
         {/* DESGLOSE DE CAJA */}
         <div className="bg-gray-900 border border-gray-800 p-5 rounded-2xl space-y-4">
           <h2 className="text-lg font-bold text-gray-100 border-b border-gray-800 pb-2">
-            💵 Flujo de Caja del Día
+            Flujo de Caja del Día
           </h2>
           {caja ? (
             <div className="space-y-3 text-sm">
@@ -180,7 +180,7 @@ export default function DashboardView() {
         {/* ÚLTIMOS MOVIMIENTOS */}
         <div className="lg:col-span-2 bg-gray-900 border border-gray-800 p-5 rounded-2xl">
           <h2 className="text-lg font-bold text-gray-100 border-b border-gray-800 pb-2 mb-4">
-            ⚡ Últimas Transacciones
+            Últimas Transacciones
           </h2>
           {!metrics?.ultimasTransacciones || metrics.ultimasTransacciones.length === 0 ? (
             <p className="text-sm text-gray-500 text-center py-6">Sin actividad reciente registrada.</p>

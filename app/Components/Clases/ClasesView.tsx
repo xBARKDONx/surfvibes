@@ -145,7 +145,7 @@ export default function ClasesView() {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 text-white">
       <div className="border-b border-gray-800 pb-4">
-        <h1 className="text-2xl font-bold text-cyan-400">🏄‍♂️ Clases de Surf</h1>
+        <h1 className="text-2xl font-bold text-cyan-400">Clases de Surf</h1>
         <p className="text-sm text-gray-400">Agendamiento, asignación de instructores y cobros</p>
       </div>
 
@@ -234,7 +234,7 @@ export default function ClasesView() {
         {/* LISTADO DE CLASES PROGRAMADAS Y HISTORIAL */}
         <div className="lg:col-span-2 bg-gray-900 border border-gray-800 p-5 rounded-2xl">
           <h2 className="text-lg font-bold text-gray-100 border-b border-gray-800 pb-2 mb-4">
-            📋 Clases Agendadas
+            Clases Agendadas
           </h2>
 
           {clases.length === 0 ? (
@@ -254,10 +254,10 @@ export default function ClasesView() {
                       </span>
                     </div>
                     <p className="text-xs text-gray-400 mt-1">
-                      🏨 Hostal: {c.cliente_hostal} | 👤 Instructor: {c.descripcion_instructor || 'Sin asignar'}
+                      Hostal: {c.cliente_hostal} | 👤 Instructor: {c.descripcion_instructor || 'Sin asignar'}
                     </p>
                     <p className="text-xs text-amber-400 mt-0.5">
-                      ⏰ {new Date(c.fecha_hora).toLocaleString()}
+                      {new Date(c.fecha_hora).toLocaleString()}
                     </p>
                   </div>
 
@@ -324,7 +324,7 @@ export default function ClasesView() {
                       : 'bg-gray-800 border-gray-700 text-gray-400'
                   }`}
                 >
-                  💵 Efectivo
+                  Efectivo
                 </button>
                 <button
                   type="button"
@@ -335,7 +335,7 @@ export default function ClasesView() {
                       : 'bg-gray-800 border-gray-700 text-gray-400'
                   }`}
                 >
-                  💳 Tarjeta
+                  Tarjeta
                 </button>
               </div>
             </div>

@@ -73,7 +73,7 @@ export default function KillasView() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">⚓ Inventario de Killas</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Inventario de QUIllas</h1>
           <p className="text-slate-500 text-xs">Sistemas FCS, FCS2, Future y quillas simples</p>
         </div>
         <button

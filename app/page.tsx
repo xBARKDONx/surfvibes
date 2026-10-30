@@ -41,8 +41,8 @@ export default function Home() {
       <header className="bg-[#0f172a] text-white">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center gap-2">
-            <span className="text-cyan-400 font-bold text-lg">≈ Vibeswell</span>
-            <span className="text-slate-400 text-xs tracking-widest font-semibold uppercase">SURF</span>
+            <span className="text-cyan-400 font-bold text-lg">VibesSurfAcademy</span>
+            <span className="text-slate-400 text-xs tracking-widest font-semibold uppercase"></span>
           </div>
           <div className="flex items-center gap-4 text-xs text-slate-300">
             <span className="capitalize">{fechaActual || 'Cargando fecha...'}</span>

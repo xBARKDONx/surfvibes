@@ -73,7 +73,7 @@ export default function SurfboardsView() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">🏄 Inventario de Tablas de Surf</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Inventario de Tablas de Surf</h1>
           <p className="text-slate-500 text-xs">Gestión y disponibilidad del quiver del shop</p>
         </div>
         <button

@@ -103,7 +103,7 @@ export default function ClientesView() {
                       {c.nombre}
                     </td>
                     <td className="p-4 font-semibold text-slate-700">
-                      📍 {c.hostal || 'Sin hostal registrado'}
+                      {c.hostal || 'Sin hostal registrado'}
                     </td>
                     <td className="p-4 text-slate-600 font-mono">
                       {c.telefono || 'Sin teléfono'}

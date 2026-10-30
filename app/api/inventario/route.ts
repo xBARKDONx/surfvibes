@@ -1,65 +1,56 @@
-import { NextResponse } from 'next/server';
 import pool from '../../../src/lib/db';
+import { NextRequest, NextResponse } from 'next/server';
 
-// GET: Obtener todos los productos del inventario o filtrados por categoría
-export async function GET(request: Request) {
+export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const categoria = searchParams.get('categoria');
+    const { searchParams } = new URL(req.url);
+    const tipo = searchParams.get('tipo');
 
-    let query = 'SELECT * FROM inventario ORDER BY id DESC';
-    let params: any[] = [];
+    let query = 'SELECT * FROM inventario';
+    const params: any[] = [];
 
-    if (categoria) {
-      query = 'SELECT * FROM inventario WHERE categoria = ? ORDER BY id DESC';
-      params.push(categoria);
+    if (tipo) {
+      query += ' WHERE tipo = ?';
+      params.push(tipo);
     }
 
     const [rows]: any = await pool.query(query, params);
     return NextResponse.json({ success: true, data: rows });
   } catch (error: any) {
-    console.error('Error al obtener inventario:', error);
-    return NextResponse.json(
-      { success: false, error: 'Error al consultar MySQL', details: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: error?.message }, { status: 500 });
   }
 }
 
-// POST: Agregar un nuevo ítem al inventario
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json();
-    const { categoria, nombre_modelo, marca, especificaciones, precio_venta, precio_renta_dia, stock, estado } = body;
+    const body = await req.json();
+    const { tipo, modelo, marca, sistema, medidas, precio_renta, precio_venta, stock } = body;
 
-    if (!categoria || !nombre_modelo || !marca) {
-      return NextResponse.json(
-        { success: false, error: 'Faltan campos obligatorios' },
-        { status: 400 }
-      );
-    }
+    // Normalizar valores para evitar fallos de NULL en la base de datos
+    const tipoVal = tipo || 'killa'; // 'killa', 'cera', 'surfboard', 'renta'
+    const modeloVal = modelo || marca || 'Modelo Standard';
+    const marcaVal = marca || 'Generico';
+    const sistemaVal = sistema || medidas || 'N/A';
+    const rentaNum = parseFloat(precio_renta) || 0.0;
+    const ventaNum = parseFloat(precio_venta) || 0.0;
+    const stockNum = parseInt(stock) || 1;
 
+    // Inserción flexible que soporta cualquier item de inventario
     const [result]: any = await pool.query(
-      `INSERT INTO inventario 
-       (categoria, nombre_modelo, marca, especificaciones, precio_venta, precio_renta_dia, stock, estado) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        categoria,
-        nombre_modelo,
-        marca,
-        especificaciones || '',
-        Number(precio_venta) || 0.00,
-        Number(precio_renta_dia) || 0.00,
-        Number(stock) || 1,
-        estado || 'Disponible'
-      ]
+      `INSERT INTO inventario (tipo, modelo, marca, sistema, precio_renta, precio_venta, stock, estado)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'Disponible')`,
+      [tipoVal, modeloVal, marcaVal, sistemaVal, rentaNum, ventaNum, stockNum]
     );
 
-    return NextResponse.json({ success: true, message: 'Ítem registrado con éxito', id: result.insertId });
+    return NextResponse.json({
+      success: true,
+      message: 'Item agregado correctamente al inventario',
+      id: result.insertId,
+    });
   } catch (error: any) {
-    console.error('Error al insertar ítem:', error);
+    console.error('Error en API Inventario:', error);
     return NextResponse.json(
-      { success: false, error: 'Error al insertar en MySQL', details: error.message },
+      { success: false, error: error?.message || 'Error al guardar en base de datos' },
       { status: 500 }
     );
   }

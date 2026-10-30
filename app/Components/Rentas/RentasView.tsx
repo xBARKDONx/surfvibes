@@ -43,7 +43,7 @@ export default function RentasView() {
         const text = await resTablas.text();
         if (text) {
           const dataTablas = JSON.parse(text);
-          console.log('📌 DATOS RECIBIDOS DE /api/tablas:', dataTablas);
+          console.log('DATOS RECIBIDOS DE /api/tablas:', dataTablas);
           if (dataTablas.success && Array.isArray(dataTablas.data)) {
             // Guardamos directamente todas las tablas activas/disponibles
             setTablas(dataTablas.data);
@@ -123,7 +123,7 @@ export default function RentasView() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">📋 Control de Rentas</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Control de Rentas</h1>
           <p className="text-slate-500 text-xs">Gestión de alquileres, tarifas y devoluciones</p>
         </div>
         <button
