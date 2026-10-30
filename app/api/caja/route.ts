@@ -1,4 +1,4 @@
-import pool from '../../../src/lib/db';
+import pool from '../../lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET() {
@@ -7,10 +7,16 @@ export async function GET() {
       "SELECT * FROM caja WHERE estado = 'Abierta' ORDER BY id DESC LIMIT 1"
     );
 
-    return NextResponse.json(rows && rows.length > 0 ? rows[0] : null);
+    const cajaActiva = rows && rows.length > 0 ? rows[0] : null;
+
+    return NextResponse.json({
+      success: true,
+      caja: cajaActiva,
+      data: cajaActiva
+    });
   } catch (error: any) {
     console.error('Error GET caja:', error);
-    return NextResponse.json({ success: false, error: error?.message || 'Error en servidor' }, { status: 500 });
+    return NextResponse.json({ success: false, error: error?.message || 'Error' }, { status: 500 });
   }
 }
 
@@ -29,21 +35,24 @@ export async function POST(req: NextRequest) {
         [hoy, monto]
       );
 
+      const nuevaCaja = { id: result.insertId, fecha: hoy, monto_inicio: monto, estado: 'Abierta' };
+
       return NextResponse.json({ 
         success: true, 
-        data: { id: result.insertId, fecha: hoy, monto_inicio: monto, estado: 'Abierta' } 
+        caja: nuevaCaja,
+        data: nuevaCaja 
       });
     }
 
     if (accion === 'CERRAR') {
       await pool.query("UPDATE caja SET estado = 'Cerrada' WHERE estado = 'Abierta'");
-      return NextResponse.json({ success: true, message: 'Caja cerrada correctamente' });
+      return NextResponse.json({ success: true, message: 'Caja cerrada' });
     }
 
     return NextResponse.json({ success: false, error: 'Acción no válida' }, { status: 400 });
 
   } catch (error: any) {
     console.error('Error POST caja:', error);
-    return NextResponse.json({ success: false, error: error?.message || 'Error en servidor' }, { status: 500 });
+    return NextResponse.json({ success: false, error: error?.message || 'Error' }, { status: 500 });
   }
 }
