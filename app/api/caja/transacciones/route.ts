@@ -1,103 +1,61 @@
-import { NextResponse } from 'next/server';
-import pool from '../../../../src/lib/db';
+import pool from '../../../../src/lib/db'; // O la ruta relativa correspondiente según la carpeta
+import { NextRequest, NextResponse } from 'next/server';
 
-// GET: Historial de transacciones de la caja de hoy
-export async function GET() {
+export async function POST(req: NextRequest) {
   try {
-    const hoy = new Date().toISOString().split('T')[0];
+    const body = await req.json();
+    const { tipo, descripcion, monto, propina, metodo_pago } = body;
 
-    const [rows]: any = await pool.query(
-      `SELECT t.* 
-       FROM transacciones t
-       INNER JOIN caja c ON t.caja_id = c.id
-       WHERE c.fecha = ?
-       ORDER BY t.id DESC`,
-      [hoy]
+    // 1. Obtener la caja que está actualmente Abierta
+    const [cajas]: any = await pool.query(
+      "SELECT id FROM caja WHERE estado = 'Abierta' ORDER BY id DESC LIMIT 1"
     );
 
-    return NextResponse.json({ success: true, data: rows });
-  } catch (error: any) {
-    console.error('Error al obtener transacciones:', error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-  }
-}
-
-// POST: Registrar nuevo ingreso o egreso manual
-export async function POST(request: Request) {
-  const connection = await pool.getConnection();
-  try {
-    const body = await request.json();
-    const { tipo, descripcion, monto, metodo_pago, propina } = body;
-
-    if (!tipo || !descripcion || monto === undefined) {
+    if (!cajas || cajas.length === 0) {
       return NextResponse.json(
-        { success: false, error: 'Campos requeridos faltantes (tipo, descripcion, monto)' },
+        { success: false, error: 'No hay ninguna caja abierta' },
         { status: 400 }
       );
     }
 
-    const hoy = new Date().toISOString().split('T')[0];
+    const cajaId = cajas[0].id;
+    const montoNum = parseFloat(monto) || 0;
+    const propinaNum = parseFloat(propina) || 0;
 
-    await connection.beginTransaction();
-
-    // Obtener caja abierta
-    const [caja]: any = await connection.query(
-      'SELECT id FROM caja WHERE fecha = ? AND estado = "Abierta"',
-      [hoy]
-    );
-
-    if (caja.length === 0) {
-      await connection.rollback();
-      return NextResponse.json(
-        { success: false, error: 'Debe abrir la caja antes de registrar movimientos' },
-        { status: 400 }
-      );
-    }
-
-    const cajaId = caja[0].id;
-    const metodo = metodo_pago || 'Efectivo';
-    const montoNum = Number(monto);
-    const propinaNum = Number(propina || 0);
-
-    // Insertar transacción
-    const [resTrans]: any = await connection.query(
-      `INSERT INTO transacciones (caja_id, metodo_pago, tipo, descripcion, monto, propina)
+    // 2. Insertar el movimiento/transacción
+    await pool.query(
+      `INSERT INTO transacciones (caja_id, tipo, descripcion, monto, propina, metodo_pago)
        VALUES (?, ?, ?, ?, ?, ?)`,
-      [cajaId, metodo, tipo, descripcion, montoNum, propinaNum]
+      [cajaId, tipo, descripcion, montoNum, propinaNum, metodo_pago || 'Efectivo']
     );
 
-    // Actualizar totales acumulados de la caja
-    if (tipo === 'Egreso') {
-      await connection.query(
-        'UPDATE caja SET total_egresos = total_egresos + ? WHERE id = ?',
+    // 3. Actualizar los totales acumulados en la tabla caja
+    if (tipo === 'EGRESO' || tipo === 'GASTO') {
+      await pool.query(
+        "UPDATE caja SET total_egresos = total_egresos + ? WHERE id = ?",
         [montoNum, cajaId]
       );
     } else {
-      if (metodo === 'Efectivo') {
-        await connection.query(
-          'UPDATE caja SET total_efectivo = total_efectivo + ?, total_propinas = total_propinas + ? WHERE id = ?',
+      if (metodo_pago === 'Tarjeta') {
+        await pool.query(
+          "UPDATE caja SET total_tarjeta = total_tarjeta + ?, total_propinas = total_propinas + ? WHERE id = ?",
           [montoNum, propinaNum, cajaId]
         );
       } else {
-        await connection.query(
-          'UPDATE caja SET total_tarjeta = total_tarjeta + ?, total_propinas = total_propinas + ? WHERE id = ?',
+        await pool.query(
+          "UPDATE caja SET total_efectivo = total_efectivo + ?, total_propinas = total_propinas + ? WHERE id = ?",
           [montoNum, propinaNum, cajaId]
         );
       }
     }
 
-    await connection.commit();
-    return NextResponse.json({
-      success: true,
-      message: 'Transacción registrada con éxito',
-      id: resTrans.insertId
-    });
+    return NextResponse.json({ success: true, message: 'Transacción registrada correctamente' });
 
   } catch (error: any) {
-    await connection.rollback();
     console.error('Error al registrar transacción:', error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-  } finally {
-    connection.release();
+    return NextResponse.json(
+      { success: false, error: error?.message || 'Error al guardar la transacción' },
+      { status: 500 }
+    );
   }
 }
